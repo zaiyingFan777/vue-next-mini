@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <script src="../../dist/vue.js"></script>
+</head>
+
+<body>
+  <div id="app"></div>
+</body>
+<!-- <script>
+  const { ref, effect } = Vue
+
+  const obj = ref({
+    name: '张三'
+  })
+
+  console.log(obj)
+
+  // 调用 effect 方法
+  effect(() => {
+    // 这里会先触发obj.value的getter行为，返回Ref._value 代理后的proxy({name: '张三'})  ref.dep收集
+    // 然后再触发{name: '张三'}.name的getter行为，返回'张三'   targerMap收集
+    document.querySelector('#app').innerText = obj.value.name
+  })
+
+  setTimeout(() => {
+    // 触发obj.value的getter行为，依赖收集，返回代理后的proxy{name: '张三'}
+    // 触发.name的setter属性，执行targetMap的trigger，然后执行ReactiveEffect的run，执行fn，重新执行 document.querySelector('#app').innerText = obj.value.name
+    // 再执行两次收集工作（obj.value，.name）最后执行视图更新
+    obj.value.name = '李四'
+  }, 2000);
+
+</script> -->
+
+<!-- 简单类型测试 -->
+<script>
+  const { ref, effect } = Vue
+
+  const obj = ref('张三')
+  console.log(obj)
+  // 调用 effect 方法
+  effect(() => {
+    // 触发getter，依赖收集到obj.dep中
+    document.querySelector('#app').innerText = obj.value
+  })
+
+  setTimeout(() => {
+    // 触发setter，然后执行obj.dep里元素的run函数，然后执行effect里的fn，然后重新执行收集，最后更新视图
+    obj.value = '李四'
+  }, 2000);
+</script>
+
+
+</html>
+

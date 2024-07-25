@@ -1,3 +1,4 @@
+import { isObject } from '@vue/shared'
 import { mutableHandlers } from './baseHandlers'
 
 /**
@@ -42,3 +43,9 @@ function createReactiveObject(
   // 返回生成的proxy实例
   return proxy
 }
+
+/**
+ * 将指定数据变为reactive数据，否则返回原始数据
+ */
+export const toReactive = <T extends unknown>(value: T): T =>
+  isObject(value) ? reactive(value as object) : value
