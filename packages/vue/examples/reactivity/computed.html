@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <script src="../../dist/vue.js"></script>
+</head>
+
+<body>
+  <div id="app"></div>
+</body>
+
+<!-- <script>
+  const { reactive, computed, effect } = Vue
+
+  const obj = reactive({
+    name: '张三'
+  })
+  console.log(obj)
+  
+  const computedObj = computed(() => {
+    return '姓名：' + obj.name
+  })
+
+  effect(() => {
+    // 1.computedObj.value(effect.fn订阅到computedObj.dep中)
+    // computedObj.value触发ComputedRefImpl实例的getter行为，将这里的effect的ReactiveEffect实例添加到cri的dep中
+    // 2.cri.effect.run(执行cri.effect.fn获取obj.name的计算值。将cri.effect订阅到reacttiveMap{{name: zhangsan: {name: [cri.effect]}}})中
+    // 执行cri.effect.run方法（computed传入的回调），触发obj.name getter行为，将cri.effect(ReactiveEffect)添加到reactiveMap中key{name:张三}: Map{name: Set{ReactiveEffect( fn为computed里传的)}}
+    // 最后返回张三，并把张三赋值给cri._value
+    document.querySelector('#app').innerText = computedObj.value
+  })
+
+  setTimeout(() => {
+    // 触发setter，{{name: zhangsan: {name: [cri.effect]}}})，触发name: [cri.effect]去trigger，
+    // cri.effect.scheduler存在，去执行，然后去通知cri.dep，cri.dep存的是(effect传入的回调)，执行dep中effect.run(effect里的回调函数) =》
+    // document.querySelector('#app').innerText = computedObj.value 触发getter，重新依赖收集（将effect的回调收集到cri的dep中）=> cri.effect.run（computed里的回调函数） =》然后
+    // 依赖收集(obj.name reactiveMap中key{name:张三}: Map{name: Set{ReactiveEffect( fn为computed里传的)}}) => 读取到obj.name为李四 更新视图
+    obj.name = '李四'
+    console.log(computedObj.value); // 李四
+  }, 2000)
+</script> -->
+
+<script>
+  const { reactive, computed, effect } = Vue
+
+  const obj = reactive({
+    name: '张三'
+  })
+
+  const computedObj = computed(() => {
+    console.log('计算属性执行计算');
+    return '姓名：' + obj.name
+  })
+
+  effect(() => {
+    document.querySelector('#app').innerHTML = computedObj.value
+    document.querySelector('#app').innerHTML = computedObj.value
+  })
+
+  setTimeout(() => {
+    obj.name = '李四'
+  }, 2000);
+</script>
+
+
+
+</html>
+
