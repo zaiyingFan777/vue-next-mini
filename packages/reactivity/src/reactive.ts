@@ -1,6 +1,8 @@
 import { isObject } from '@vue/shared'
 import { mutableHandlers } from './baseHandlers'
 
+// vue的响应式核心：依赖收集、依赖触发
+
 /**
  * 响应性Map缓存对象 ps: 对于 WeakMap 而言，它存在两个比较重要的特性：1.key 必须是对象 2.key 是弱引用的
  * key: target
