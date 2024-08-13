@@ -26,10 +26,10 @@
   })
 
   setTimeout(() => {
-    // 触发obj.value的getter行为，依赖收集，返回代理后的proxy{name: '张三'}
-    // 触发.name的setter属性，执行targetMap的trigger，然后执行ReactiveEffect的run，执行fn，重新执行 document.querySelector('#app').innerText = obj.value.name
+    // 触发obj.value的getter行为，依赖收集(源码中activeEffect这时候为undefined，所以不会再进行依赖收集，我们这里没有做重置操作)，返回代理后的proxy{name: '张三'}
+    // 触发proxy.name的setter属性，执行targetMap的trigger，然后执行ReactiveEffect的run，执行fn，重新执行 document.querySelector('#app').innerText = obj.value.name
     // 再执行两次收集工作（obj.value，.name）最后执行视图更新
-    obj.value.name = '李四'
+    obj.value.name = '李四' // 1. 触发了一次ref的get value(源码中activeEffect为undefined，直接返回proxy，不进行依赖收集)，2. 触发了一个reactive的setter(里面又是两次收集obj.value, proxy.name)
   }, 2000);
 
 </script> -->

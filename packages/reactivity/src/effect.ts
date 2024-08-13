@@ -158,10 +158,18 @@ export class ReactiveEffect<T = any> {
   }
 
   run() {
-    // 为activeEffect赋值
+    // 保留上一个activeEffect
+    const prevEffect = activeEffect
+    // 为activeEffect赋值（当前的ReactiveEffect）
     activeEffect = this
 
-    // 执行fn函数
-    return this.fn()
+    try {
+      // 执行fn函数
+      return this.fn()
+    } finally {
+      // 恢复activeEffect为之前的值
+      // 这里执行完try结构体的代码块，最后执行这里
+      activeEffect = prevEffect
+    }
   }
 }

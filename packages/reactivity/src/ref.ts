@@ -10,6 +10,7 @@ export interface Ref<T = any> {
 /**
  * ref函数
  * 简单数据类型的响应性(其实并不具备响应性)，不是基于 proxy 或 Object.defineProperty 进行实现的，将老值保存到RefImpl实例中，触发setter，对比新老值是否一致
+ * value是对象，则是通过reactive来做对象的响应性的，如果是简单类型数据则像上述描述那样
  * @param value unknown
  */
 export function ref(value?: unknown) {
