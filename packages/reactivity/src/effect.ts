@@ -83,6 +83,7 @@ export function triggerEffects(dep: Dep) {
   // }
 
   // 不在依次触发，而是先触发所有的计算依赖属性，再触发所有的非计算属性依赖
+  // 这样就解决了触发computed.dep[effect,带有scheduler的effect]死循环的问题
   for (const effect of effects) {
     if (effect.computed) {
       triggerEffect(effect)
@@ -152,24 +153,32 @@ export class ReactiveEffect<T = any> {
   // 整体来说，这段代码的作用是在创建类的新实例时，需要传入一个无参数的函数，该函数的返回值类型是泛型 T。这个函数会被保存为类实例的 fn 属性，可以在后续的代码中调用。
   constructor(
     public fn: () => T,
+    // 调度器
     public scheduler: EffectScheduler | null = null
   ) {
     this.fnStr = fn.toString()
   }
 
+  // run() {
+  //   // 保留上一个activeEffect
+  //   const prevEffect = activeEffect
+  //   // 为activeEffect赋值（当前的ReactiveEffect）
+  //   activeEffect = this
+
+  //   try {
+  //     // 执行fn函数
+  //     return this.fn()
+  //   } finally {
+  //     // 恢复activeEffect为之前的值
+  //     // 这里执行完try结构体的代码块，最后执行这里
+  //     activeEffect = prevEffect
+  //   }
+  // }
+
   run() {
-    // 保留上一个activeEffect
-    const prevEffect = activeEffect
     // 为activeEffect赋值（当前的ReactiveEffect）
     activeEffect = this
-
-    try {
-      // 执行fn函数
-      return this.fn()
-    } finally {
-      // 恢复activeEffect为之前的值
-      // 这里执行完try结构体的代码块，最后执行这里
-      activeEffect = prevEffect
-    }
+    // 执行fn函数
+    return this.fn()
   }
 }

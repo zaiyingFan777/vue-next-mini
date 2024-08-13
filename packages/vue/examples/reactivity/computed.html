@@ -28,6 +28,8 @@
     // 2.cri.effect.run(执行cri.effect.fn获取obj.name的计算值。将cri.effect订阅到reacttiveMap{{name: zhangsan: {name: [cri.effect]}}})中
     // 执行cri.effect.run方法（computed传入的回调），触发obj.name getter行为，将cri.effect(ReactiveEffect)添加到reactiveMap中key{name:张三}: Map{name: Set{ReactiveEffect( fn为computed里传的)}}
     // 最后返回张三，并把张三赋值给cri._value
+
+    // 1. effect(fn) 被收集到 computedRefImpl.dep里，2. 执行this.effect(computed(fn)).run 触发reactive的getter，然后this.effect被收集到targetMap里
     document.querySelector('#app').innerText = computedObj.value
   })
 
@@ -36,11 +38,16 @@
     // cri.effect.scheduler存在，去执行，然后去通知cri.dep，cri.dep存的是(effect传入的回调)，执行dep中effect.run(effect里的回调函数) =》
     // document.querySelector('#app').innerText = computedObj.value 触发getter，重新依赖收集（将effect的回调收集到cri的dep中）=> cri.effect.run（computed里的回调函数） =》然后
     // 依赖收集(obj.name reactiveMap中key{name:张三}: Map{name: Set{ReactiveEffect( fn为computed里传的)}}) => 读取到obj.name为李四 更新视图
+    
+    // obj.name发生变化 => computed发生变化 => effect触发更新视图
+    // obj.name变化（targetMap的setter，effect.scheduler） => effect.scheduler（computedRefImpl.dep）=> effect的fn执行，=> computedObj.value的getter，effect被收集到computedRefImpl.dep
+    // => computedRefImpl.effect.run => obj.name的getter，computedRefImpl.effect被收集到targetmap里，并返回最新值，更新视图
     obj.name = '李四'
     console.log(computedObj.value); // 李四
   }, 2000)
 </script> -->
 
+<!-- 计算属性的cache -->
 <script>
   const { reactive, computed, effect } = Vue
 
@@ -53,12 +60,20 @@
     return '姓名：' + obj.name
   })
 
+  console.log(computedObj, 'computedObj')
+
   effect(() => {
+    // computedObj.dep收集本effect，然后computedObj.effect.run。targetMap收集了computedObj.effect
     document.querySelector('#app').innerHTML = computedObj.value
+    // computedObj.dep又收集了computedObj.effect(activeEffect栈顶)，所以computedObj.dep(effect、computedObj.effect)
     document.querySelector('#app').innerHTML = computedObj.value
   })
 
   setTimeout(() => {
+    // 这里我们触发依赖的时候先触发带computed的，再触发不带computed的，这样就不会触发死循环，
+    // 因为targetMap里的effect执行scheduler，他的dirty变为True，然后执行computedRefImpl.dep[effect、computedObj.effect]
+    // 也是先执行带computed的然后这时候执行他的scheduler因为我们上面dirty变为了True，直接跳过，执行computedRefImpl.dep的不带computed的effect
+    // 然后就是新一轮的依赖收集得到值，再更新视图等等操作，这样就避免了死循环
     obj.name = '李四'
   }, 2000);
 </script>
