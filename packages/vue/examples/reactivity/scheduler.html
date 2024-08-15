@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <script src="../../dist/vue.js"></script>
+</head>
+
+<body>
+</body>
+<script>
+  const { reactive, effect } = Vue
+
+  const obj = reactive({
+    count: 1
+  })
+
+  // 调用 effect 方法
+  // 1
+  // 代码结束
+  // 2
+  effect(() => {
+    console.log(obj.count);
+  }, {
+    scheduler() {
+      setTimeout(() => {
+        console.log(obj.count);
+      })
+    }
+  })
+
+
+  obj.count = 2
+
+  console.log('代码结束');
+
+</script>
+
+
+</html>
+

@@ -12,15 +12,24 @@
 <script>
   const { reactive, watch } = Vue
 
+  // 1.通过reactive构建响应性数据
   const obj = reactive({
     name: '张三'
   })
-
+  // 2.执行了watch函数
+  // watch(obj, (value, oldValue) => {
+  //   console.log('watch 监听被触发');
+  //   console.log('old', JSON.stringify(oldValue));
+  //   console.log('value', JSON.stringify(value));
+  // })
   watch(obj, (value, oldValue) => {
     console.log('watch 监听被触发');
-    console.log('value', value);
+    console.log('old', JSON.stringify(oldValue));
+    console.log('value', JSON.stringify(value));
+  }, {
+    immediate: true
   })
-
+  // 3. 2s后触发setter行为
   setTimeout(() => {
     obj.name = '李四'
   }, 2000);

@@ -20,3 +20,13 @@ export const hasChanged = (value: any, oldValue: any): boolean =>
  */
 export const isFunction = (val: unknown): val is Function =>
   typeof val === 'function'
+
+/**
+ * Object.assign
+ */
+export const extend = Object.assign
+
+/**
+ * 只读的空对象
+ */
+export const EMPTY_OBJ: { readonly [key: string]: any } = {}

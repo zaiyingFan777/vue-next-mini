@@ -1,4 +1,4 @@
-import { isArray } from '@vue/shared'
+import { extend, isArray } from '@vue/shared'
 import { createDep, Dep } from './dep'
 import { ComputedRefImpl } from './computed'
 
@@ -35,7 +35,7 @@ export function track(target: object, key: unknown) {
   }
   trackEffects(dep)
   // 临时打印
-  console.log('track: 收集依赖', targetMap)
+  // console.log('track: 收集依赖', targetMap)
 }
 
 /**
@@ -74,7 +74,7 @@ export function trigger(target: object, key?: unknown, newValue?: unknown) {
  * 依次触发dep中保存的依赖
  */
 export function triggerEffects(dep: Dep) {
-  console.log('trigger: 触发依赖')
+  // console.log('trigger: 触发依赖')
   // 把dep构建为一个数组(Array.isArray(new Set())) => false
   const effects = isArray(dep) ? dep : [...dep]
   // 依次触发
@@ -113,6 +113,11 @@ export function triggerEffect(effect: ReactiveEffect) {
   }
 }
 
+export interface ReactiveEffectOptions {
+  lazy?: boolean
+  scheduler?: EffectScheduler
+}
+
 /**
  * effect函数
  * @param fn 执行方法
@@ -122,11 +127,21 @@ export function triggerEffect(effect: ReactiveEffect) {
 // effect(() => {
 //   document.querySelector('#app').innerText = obj.name
 // })
-export function effect<T = any>(fn: () => T) {
+export function effect<T = any>(fn: () => T, options?: ReactiveEffectOptions) {
   // 生成ReactiveEffect实例
   const _effect = new ReactiveEffect(fn)
-  // 执行run函数
-  _effect.run()
+
+  // 存在options，则合并配置对象
+  if (options) {
+    extend(_effect, options)
+  }
+
+  // !options.lazy时
+  if (!options || !options.lazy) {
+    // lazy为false（非懒） lazy为true时（懒执行）
+    // 执行run函数
+    _effect.run()
+  }
 }
 
 /**
@@ -181,4 +196,6 @@ export class ReactiveEffect<T = any> {
     // 执行fn函数
     return this.fn()
   }
+
+  stop() {}
 }

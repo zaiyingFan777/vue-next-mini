@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <script src="../../dist/vue.js"></script>
+</head>
+
+<body>
+</body>
+<script>
+  const { reactive, effect, queuePreFlushCb } = Vue
+
+  const obj = reactive({
+    count: 1
+  })
+
+  // 调用 effect 方法
+  // 打印 1 2 3
+  // effect(() => {
+  //   console.log(obj.count)
+  // })
+
+  // 批处理后
+  // 1 3 3
+  effect(() => {
+    console.log(obj.count)
+  }, {
+    scheduler() {
+      queuePreFlushCb(() => {
+        console.log(obj.count);
+      })
+    }
+  })
+
+  obj.count = 2
+  obj.count = 3
+
+</script>
+
+
+
+</html>
+

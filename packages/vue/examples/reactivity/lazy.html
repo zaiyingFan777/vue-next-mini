@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <script src="../../dist/vue.js"></script>
+</head>
+
+<body>
+</body>
+<script>
+  const { reactive, effect } = Vue
+
+  const obj = reactive({
+    count: 1
+  })
+
+  // 调用 effect 方法
+  // 为Lazy的时候
+  // 打印：
+  // 代码结束
+  effect(() => {
+    console.log(obj.count);
+  }, {
+    lazy: true
+  })
+  
+  // 当不存在lazy或者lazy为false，就是立即执行
+  // 1 
+  // 2
+  // 代码结束
+  // effect(() => {
+  //   console.log(obj.count);
+  // })
+  // effect(() => {
+  //   console.log(obj.count);
+  // }, {
+  //   lazy: false
+  // })
+
+  obj.count = 2
+
+  console.log('代码结束');
+</script>
+
+</html>
+
