@@ -16,6 +16,7 @@
     name: '张三'
   })
 
+  // obj.value: proxy
   watch(obj.value, (value, oldValue) => {
     console.log('watch 监听被触发');
     console.log('old', JSON.stringify(oldValue));
