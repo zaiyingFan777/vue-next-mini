@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <script src="../../dist/vue.js"></script>
+
+  <style>
+    .test {
+      color: red;
+    }
+
+    #test {
+      font-size: 32px;
+    }
+
+    .active {
+      color: blue;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+</body>
+
+<script>
+  const { h, render } = Vue
+
+  const vnode = h('div', {
+    class: 'test',
+  }, 'hello render')
+  console.log(vnode);
+
+  render(vnode, document.querySelector('#app'))
+
+  // 延迟两秒，生成新的 vnode，进行更新操作
+  setTimeout(() => {
+    const vnode2 = h('div', {
+      class: 'active'
+    }, 'update')
+    render(vnode2, document.querySelector('#app'))
+  }, 2000);
+</script>
+
+</html>
+

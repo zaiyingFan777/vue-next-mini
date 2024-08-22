@@ -35,3 +35,14 @@ export const EMPTY_OBJ: { readonly [key: string]: any } = {}
  * 判断是否为一个 string
  */
 export const isString = (val: unknown): val is string => typeof val === 'string'
+
+/**
+ * 匹配任何以 "on" 开头，并且 "on" 后面紧跟的字符不是小写字母的字符串。比如onClick
+ * onclick匹配不到
+ */
+const onRE = /^on[^a-z]/
+
+/**
+ * 是否 on 开头
+ */
+export const isOn = (key: string) => onRE.test(key)

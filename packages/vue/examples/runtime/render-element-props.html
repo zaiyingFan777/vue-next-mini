@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <script src="../../dist/vue.js"></script>
+
+  <style>
+    .test {
+      color: red;
+    }
+
+    #test {
+      font-size: 32px;
+    }
+
+    .active {
+      color: blue;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+</body>
+<script>
+  // 框架实现：区分处理 ELEMENT 节点的各种属性挂载
+  const { h, render } = Vue
+
+  // class 属性：通过 el.className 设定
+  // textarea 的 type 属性：通过 el.setAttribute 设定
+  // textarea 的 value 属性：通过 el[key] = value 设定
+  const vnode = h('textarea', {
+    class: 'test-class', // el.className
+    value: 'textarea value', // el.value || el[key]
+    type: 'text' // el.setAttribute('type', value)
+  })
+  // 挂载
+  render(vnode, document.querySelector('#app'))
+</script>
+
+</html>
+

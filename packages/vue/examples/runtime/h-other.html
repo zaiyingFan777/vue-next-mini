@@ -12,7 +12,14 @@
 <script>
   const { h, render, Text, Comment, Fragment } = Vue
   const vnodeText = h(Text, '这是一个 Text')
-  console.log(vnodeText);
+  console.log(vnodeText); 
+  // {
+  //   children: "这是一个 Text"
+  //   props: null
+  //   shapeFlag: 8
+  //   type: Symbol(Text)
+  //   __v_isVNode: true
+  // }
 
   const vnodeComment = h(Comment, '这是一个 Comment')
   console.log(vnodeComment);

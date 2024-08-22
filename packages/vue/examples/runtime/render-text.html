@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <script src="../../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+</body>
+<script>
+  const { h, render, Text } = Vue
+
+  const vnode = h(Text, 'hello world')
+  // 挂载
+  render(vnode, document.querySelector('#app'))
+
+  // 延迟两秒，生成新的 vnode，进行更新操作
+  setTimeout(() => {
+    const vnode2 = h(Text, '你好，世界')
+    render(vnode2, document.querySelector('#app'))
+  }, 2000);
+</script>
+
+
+
+</html>
+

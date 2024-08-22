@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <script src="../../dist/vue.js"></script>
+
+  <style>
+    .test {
+      color: red;
+    }
+
+    #test {
+      font-size: 32px;
+    }
+
+    .active {
+      color: blue;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+</body>
+<script>
+  // 框架实现：ELEMENT 节点下，事件的挂载和更新
+  const { h, render } = Vue
+
+  const vnode = h('button', {
+    // 注意：不可以使用 onclick。因为 onclick 无法满足 /^on[^a-z]/ 的判断条件，这会导致 event 通过 ：el[key] = value 的方式绑定（虽然这样也可以绑定 event），从而无法进入 patchEvent。在项目中，当我们通过 @click 绑定属性时，会得到 onClick 选项
+    onClick() {
+      alert('点击')
+    },
+  }, '点击')
+  // 挂载
+  render(vnode, document.querySelector('#app'))
+
+  setTimeout(() => {
+    const vnode2 = h('button', {
+      onDblclick() {
+        alert('双击')
+      },
+    }, '双击')
+    // 挂载
+    render(vnode2, document.querySelector('#app'))
+  }, 2000);
+</script>
+
+
+</html>
+

@@ -13,6 +13,16 @@ export interface VNode {
   props: any
   children: any
   shapeFlag: number
+  key: any
+}
+
+/**
+ * 根据 key || type 判断是否为相同类型节点
+ */
+export function isSameVNodeType(n1: VNode, n2: VNode): boolean {
+  // 相同类型的元素。比如都是 div
+  // 同一个元素。key 相同 表示为同一个元素
+  return n1.type === n2.type && n1.key === n2.key
 }
 
 export function isVNode(value: any): value is VNode {

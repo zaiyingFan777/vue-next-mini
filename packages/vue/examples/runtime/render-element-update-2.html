@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <script src="../../dist/vue.js"></script>
+
+  <style>
+    .test {
+      color: red;
+    }
+
+    #test {
+      font-size: 32px;
+    }
+
+    .active {
+      color: blue;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+</body>
+
+<script>
+  // 框架实现：处理新旧节点不同元素时，ELEMENT 节点的更新操作
+  // 先删除，后插入
+  const { h, render } = Vue
+
+  const vnode = h('div', {
+    class: 'test'
+  }, 'hello render')
+
+
+  render(vnode, document.querySelector('#app'))
+
+  // 延迟两秒，生成新的 vnode，进行更新操作
+  setTimeout(() => {
+    const vnode2 = h('h1', {
+      class: 'active'
+    }, 'update')
+    render(vnode2, document.querySelector('#app'))
+  }, 2000);
+</script>
+
+
+</html>
+
