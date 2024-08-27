@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <script src="../../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+</body>
+<script>
+  // 有状态的响应性组件挂载逻辑
+  // 有状态的组件渲染，核心的点是：让 render 函数中的 this.xx 得到真实数据
+  // 那么想要达到这个目的，我们就必须要 改变 this 的指向
+  // 改变的方式就是在：生成 subTree 时，通过 call 方法，指定 this
+  const { h, render } = Vue
+
+  const component = {
+    data() {
+      return {
+        msg: 'hello component'
+      }
+    },
+    render() {
+      return h('div', this.msg)
+    }
+  }
+
+  const vnode = h(component)
+  // 挂载
+  render(vnode, document.querySelector('#app'))
+</script>
+
+
+</html>
+

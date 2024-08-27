@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <script src="../../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+</body>
+<script>
+  // 响应性数据改变，触发组件的响应性变化
+  // 此时我们已经可以在生命周期回调钩子中访问到对应的响应性数据了，根据响应性数据的概念，当数据发生变化时，
+  // 视图应该跟随发生变化，所以我们接下来就要来看一下 组件中响应性数据引起的视图改变。
+  // 1.组件的渲染，本质上是 render 函数返回值的渲染。
+  // 2.所谓响应性数据，指的是：
+  //   1.getter 时收集依赖
+  //   2.setter 时触发依赖
+
+  // 那么根据以上概念，我们所需要做的就是：
+  // 1.在组件的数据被触发 getter 时，我们应该收集依赖。那么组件什么时候触发的 getter 呢？在 packages/runtime-core/src/renderer.ts 的 setupRenderEffect 方法中，
+  // 我们创建了一个 effect，并且把 effect 的 fn 指向了 componentUpdateFn 函数。在该函数中，我们触发了 getter，然后得到了 subTree，然后进行渲染。所以依赖收集的函数为 componentUpdateFn。
+  // 2.在组件的数据被触发 setter 时，我们应该触发依赖。我们刚才说了，收集的依赖本质上是 componentUpdateFn 函数，所以我们在触发依赖时，所触发的也应该是 componentUpdateFn 函数。
+  const { h, render } = Vue
+
+  const component = {
+    data() {
+      return {
+        msg: 'hello component'
+      }
+    },
+    render() {
+      // 触发依赖收集
+      return h('div', this.msg)
+    },
+    // 组件实例处理完所有与状态相关的选项之后
+    created() {
+      setTimeout(() => {
+        this.msg = '你好，世界'
+      }, 2000);
+    }
+  }
+
+  const vnode = h(component)
+  // 挂载
+  render(vnode, document.querySelector('#app'))
+</script>
+</html>
+

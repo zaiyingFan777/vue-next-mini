@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <script src="../../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+</body>
+<script>
+  // 无状态基础组件更新逻辑
+  const { h, render } = Vue
+
+  const component = {
+    render() {
+      return h('div', 'hello component')
+    }
+  }
+
+  const vnode = h(component)
+
+  render(vnode, document.querySelector('#app'))
+
+  // type不同 先卸载 再挂载
+  setTimeout(() => {
+    const component2 = {
+      render() {
+        return h('div', 'update component')
+      }
+    }
+
+    const vnode2 = h(component2)
+
+    render(vnode2, document.querySelector('#app'))
+  }, 2000);
+</script>
+
+
+</html>
+

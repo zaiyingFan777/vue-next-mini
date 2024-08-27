@@ -1,7 +1,10 @@
 import { ShapeFlags } from 'packages/shared/src/shapeFlags'
 import { Fragment, Comment, Text, isSameVNodeType } from './vnode'
 import { EMPTY_OBJ, isString } from '@vue/shared'
-import { normalizeVNode } from './componentRenderUtils'
+import { normalizeVNode, renderComponentRoot } from './componentRenderUtils'
+import { createComponentInstance, setupComponent } from './component'
+import { queuePreFlushCb } from './scheduler'
+import { ReactiveEffect } from 'packages/reactivity/src/effect'
 
 // renderer 渲染器本身
 
@@ -75,6 +78,17 @@ function baseCreateRenderer(options: RendererOptions): any {
    */
   const unmount = vnode => {
     hostRemove(vnode.el!)
+  }
+
+  /**
+   * 组件的打补丁操作
+   */
+  const processComponent = (oldVNode, newVNode, container, anchor) => {
+    if (oldVNode == null) {
+      // 挂载
+      mountComponent(newVNode, container, anchor)
+    } else {
+    }
   }
 
   /**
@@ -188,6 +202,103 @@ function baseCreateRenderer(options: RendererOptions): any {
 
     // 插入 el 到指定的位置
     hostInsert(el, container, anchor)
+  }
+
+  /**
+   * 组件 的挂载操作
+   */
+  const mountComponent = (initialVNode, container, anchor) => {
+    // 生成组件实例
+    // vnode.component = 组件实例(instance)
+    // 组件实例(instance).vnode = vnode
+    initialVNode.component = createComponentInstance(initialVNode)
+    // 浅拷贝，绑定到同一块内存空间
+    const instance = initialVNode.component
+
+    // 标准化组件实例数据
+    setupComponent(instance)
+
+    // 设置组件渲染
+    setupRenderEffect(instance, initialVNode, container, anchor)
+  }
+
+  /**
+   * 设置组件渲染
+   */
+  const setupRenderEffect = (instance, initialVNode, container, anchor) => {
+    // 组件挂载和更新的方法
+    // 挂载的时候执行 effect.run => effect.fn => componentUpdateFn执行，这里生成子树的时候会调用 component.render()函数
+    // 然后会读取this.xxx，这时候当前的effect就会被收集到 targetMap中，然后触发依赖会执行 effect.scheduler，再执行 fn 重新渲染
+    const componentUpdateFn = () => {
+      // 当前处于 mounted 之前，即执行 挂载 逻辑
+      if (!instance.isMounted) {
+        // 获取 hook
+        const { bm, m } = instance
+
+        // 挂载前执行 beforeMount hook
+        if (bm) {
+          bm()
+        }
+
+        // 从 render 中获取需要渲染的内容
+        // const component = {
+        //   render() {
+        //     return h('div', 'hello component')
+        //   }
+        // }
+        // 上面render函数执行生成的vnode
+        const subTree = (instance.subTree = renderComponentRoot(instance))
+
+        // 通过 patch 对 subtree，进行打补丁。即：渲染组件
+        patch(null, subTree, container, anchor)
+
+        // 组件挂载后 执行 mounted hook
+        if (m) {
+          m()
+        }
+
+        // 把subTree根节点的 el（组件render真实渲染的el），作为组件vnode的el
+        initialVNode.el = subTree.el
+        // 修改标记位
+        instance.isMounted = true
+      } else {
+        // 组件更新，这时候 instance还是挂载的时候的 instance，基于mount产生的vnode、instance进行的操作，因为 setter 触发effect.scheduler =>
+        // effect.run => effect.fn => componentUpdateFn
+        // 组件更新逻辑
+        // bu、u为组件更新钩子
+        // vnode为mount时 组件的vnode
+        let { bu, u, next, vnode } = instance
+        if (!next) {
+          // 拿不到 next，就拿 vnode
+          next = vnode
+        }
+
+        // 获取下一次的 subtree 的 vnode（更新data.xxx，重新执行render拿到instance.subTree）
+        const nextTree = renderComponentRoot(instance)
+        // 保存对应的 subtree，以便进行更新操作
+        const prevTree = instance.subTree
+        // 更新 subtree（vnode.instance.subtree也发生了改变）
+        instance.subTree = nextTree
+
+        // 通过 patch 进行更新操作（新老render返回的vnode进行patch）
+        patch(prevTree, nextTree, container, anchor)
+
+        // 更新 next （vnode.el = nextTree.el）、vnode的el
+        next.el = nextTree.el
+      }
+    }
+
+    // 创建包含 scheduler 的 effect 实例
+    const effect = (instance.effect = new ReactiveEffect(
+      componentUpdateFn,
+      () => queuePreFlushCb(update)
+    ))
+
+    // 生成 update 函数 (执行effect.run => componentUpdateFn)
+    const update = (instance.update = () => effect.run())
+
+    // 触发 update 函数，本质上触发的是 componentUpdateFn
+    update()
   }
 
   /**
@@ -332,7 +443,8 @@ function baseCreateRenderer(options: RendererOptions): any {
           // Element
           processElement(oldVNode, newVNode, container, anchor)
         } else if (shapeFlag & ShapeFlags.COMPONENT) {
-          // TODO: 组件
+          // 组件
+          processComponent(oldVNode, newVNode, container, anchor)
         }
     }
   }

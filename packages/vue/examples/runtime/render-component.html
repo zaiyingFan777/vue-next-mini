@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <script src="../../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+</body>
+<script>
+  // 无状态组件挂载流程
+  // TODO
+  // render函数 => patch(组件类型) => 
+  // mountComponent(组件挂载，1.生成组件实例(vnode.component = 组件实例，组件实例.vnode = vnode) 2.标准化组件实例数据 3.设置组件渲染)
+  const { h, render } = Vue
+
+  const component = {
+    render() {
+      return h('div', 'hello component')
+    }
+  }
+
+  const vnode = h(component)
+  console.log(vnode)
+  // 挂载
+  render(vnode, document.querySelector('#app'))
+</script>
+
+</html>
+

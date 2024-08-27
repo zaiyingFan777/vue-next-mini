@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <script src="../../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+</body>
+<script>
+  // composition API ，setup 函数挂载逻辑
+  // 1.对于 setup 函数的 composition API 语法的组件挂载，本质上只是多了一个 setup 函数的处理
+  // 2.因为 setup 函数内部，可以完成对应的 自洽 ，所以我们 无需 通过 call 方法来改变 this 指向，即可得到真实的 render
+  // 3.得到真实的 render 之后，后面就是正常的组件挂载了
+  const { reactive, h, render } = Vue
+
+  const component = {
+    setup() {
+      const obj = reactive({
+        name: '张三'
+      })
+
+      setTimeout(() => {
+        obj.name = '李四'
+      }, 2000)
+
+      return () => h('div', obj.name)
+    }
+  }
+
+  const vnode = h(component)
+  // 挂载
+  render(vnode, document.querySelector('#app'))
+</script>
+
+</html>
+
