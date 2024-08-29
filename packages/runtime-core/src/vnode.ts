@@ -66,7 +66,8 @@ function createBaseVNode(type, props, children, shapeFlag) {
     type,
     props,
     children,
-    shapeFlag
+    shapeFlag,
+    key: props?.key || null // vnode增加 key 属性
   } as VNode
 
   // 标准化children

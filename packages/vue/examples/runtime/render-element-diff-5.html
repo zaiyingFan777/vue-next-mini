@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <script src="../../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+</body>
+
+<script>
+  // 乱序下的 diff 比对
+  const { h, render } = Vue
+  // a b c d e f g
+  const vnode = h('ul', [
+    h('li', {
+      key: 1
+    }, 'a'),
+    h('li', {
+      key: 2
+    }, 'b'),
+    h('li', {
+      key: 3
+    }, 'c'),
+    h('li', {
+      key: 4
+    }, 'd'),
+    h('li', {
+      key: 5
+    }, 'e'),
+    h('li', {
+      key: 6
+    }, 'f'),
+    h('li', {
+      key: 7
+    }, 'g')
+  ])
+  // 挂载
+  render(vnode, document.querySelector('#app'))
+
+  // 延迟两秒，生成新的 vnode，进行更新操作
+  // a b e c d h f g
+  setTimeout(() => {
+    const vnode2 = h('ul', [
+      h('li', {
+        key: 1
+      }, 'new-a'),
+      h('li', {
+        key: 2
+      }, 'new-b'),
+      h('li', {
+        key: 5
+      }, 'new-e'),
+      h('li', {
+        key: 3
+      }, 'new-c'),
+      h('li', {
+        key: 4
+      }, 'new-d'),
+      h('li', {
+        key: 8
+      }, 'new-h'),
+      h('li', {
+        key: 6
+      }, 'new-f'),
+      h('li', {
+        key: 7
+      }, 'new-g'),
+    ])
+    render(vnode2, document.querySelector('#app'))
+  }, 2000);
+</script>
+
+
+
+
+</html>
+
