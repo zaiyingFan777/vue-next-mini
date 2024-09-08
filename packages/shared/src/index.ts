@@ -23,6 +23,7 @@ export const isFunction = (val: unknown): val is Function =>
 
 /**
  * Object.assign
+ * var a = {x:1}  var b = {x:2, y:2} var c = Object.assign(a,b) => {x:2, y:2}
  */
 export const extend = Object.assign
 

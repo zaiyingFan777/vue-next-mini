@@ -57,6 +57,9 @@ export function createVNode(type, props, children): VNode {
   return createBaseVNode(type, props, children, shapeFlag)
 }
 
+// createElementVNode 实际调用的是 createVNode
+export { createVNode as createElementVNode }
+
 /**
  * 构建基础 VNode
  */

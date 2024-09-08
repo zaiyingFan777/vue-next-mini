@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <script src="../../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+</body>
+<script>
+  const { compile, h, render } = Vue
+
+  const template = `<div> hello world </div>`
+
+  // 生成 render 函数
+  const { code } = compile(template)
+  console.log(code)
+
+  // const _Vue = Vue
+
+  // return function render(_ctx, _cache) {
+  //     const { createElementVNode: _createElementVNode } = _Vue
+
+  //     return _createElementVNode("div", [], [" hello world "])
+  // }
+
+  // 使用上面字符串 我们new Function
+  const renderFn = new Function(code)()
+
+  // function render(_ctx, _cache) {
+  //   const { createElementVNode: _createElementVNode } = _Vue
+
+  //   return _createElementVNode("div", [], [" hello world "])
+  // }
+  console.log(renderFn)
+
+  const component = {
+    render: renderFn
+  }
+
+  const vnode = h(component) // component 是个对象，我怎么老是把他当成函数 shapeFlag: 4
+
+  // vnode
+  // {
+  //   children: null
+  //   key: null
+  //   props: undefined
+  //   shapeFlag: 4
+  //   type: {render: ƒ} // 上面的renderFn
+  //   __v_isVNode: true
+  // }
+
+  render(vnode, document.getElementById('app'))
+</script>
+</html>
+
