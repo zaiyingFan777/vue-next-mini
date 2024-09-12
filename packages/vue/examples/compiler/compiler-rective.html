@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <script src="../../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+</body>
+<script>
+  // 复合表达式 <div> hello {{ msg }}</div>
+  const { compile, h, render } = Vue
+  // 创建 template
+  // const template = `<div> hello {{ msg }} </div>`
+  const template = `<div> <h> hello {{ msg }} </h> </div>`
+
+  // 生成 render 函数
+  const renderFn = compile(template)
+
+  console.log(renderFn.toString())
+
+  // with改变了作用域的指向：即 msg 等同于 _ctx.msg
+  // function render(_ctx, _cache) {
+  //   with (_ctx) {
+  //     const { toDisplayString: _toDisplayString, createElementVNode: _createElementVNode } = _Vue
+
+      
+  //     return _createElementVNode("div", [], [" hello " + _toDisplayString(msg) + " "])
+  //   }
+  // }
+
+  // 创建组件
+  const component = {
+    data() {
+      return {
+        msg: 'world'
+      }
+    },
+    render: renderFn,
+    created() {
+      setTimeout(() => {
+        this.msg = '世界'
+      }, 2000)
+    }
+  }
+
+  // 通过 h 函数，生成 vnode
+  const vnode = h(component)
+
+  // 通过 render 函数渲染组件
+  render(vnode, document.querySelector('#app'))
+</script>
+</html>
+

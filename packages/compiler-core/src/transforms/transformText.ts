@@ -52,7 +52,8 @@ export const transformText = (node, context) => {
               // 在 当前节点 child 和 下一个节点 next 中间，插入 "+" 号
               // 合并 child + next
               currentContainer.children.push(` + `, next)
-              // children删掉j（把下一个删除）
+              // children删掉j（把下一个删除）因为currentContainer.children.push(` + `, next)已经处理了j，所以需要先将j删除，再j--，进入下一轮循环j++
+              // 这样就处理j下一个元素了
               children.splice(j, 1)
               j--
             }

@@ -89,7 +89,8 @@ function parseChildren(context: ParserContext, ancestors) {
     let node
 
     if (startsWith(s, '{{')) {
-      // TODO: 模板语法 {{ state }}
+      // 模板语法 {{ state }}
+      node = parseInterpolation(context)
     }
     // < 意味着一个标签的开始
     else if (s[0] === '<') {
@@ -113,6 +114,38 @@ function parseChildren(context: ParserContext, ancestors) {
   }
 
   return nodes
+}
+
+/**
+ * 解析插值表达式 {{ xxx }}
+ */
+function parseInterpolation(context: ParserContext) {
+  // open = {{
+  // close = }}
+  const [open, close] = ['{{', '}}']
+
+  // 移动游标，跳过{{
+  advanceBy(context, open.length)
+
+  // 获取插值表达式中间的值
+  const closeIndex = context.source.indexOf(close, open.length)
+  // " msg "
+  const preTrimContent = parseTextData(context, closeIndex)
+  // "msg"
+  const content = preTrimContent.trim()
+
+  // 移动游标，跳过}}
+  advanceBy(context, close.length)
+
+  // 插值里面包了层 简单表达式(SIMPLE_EXPRESSION)
+  return {
+    type: NodeTypes.INTERPOLATION, // 5
+    content: {
+      type: NodeTypes.SIMPLE_EXPRESSION, // 4
+      isStatic: false,
+      content
+    }
+  }
 }
 
 /**
@@ -157,7 +190,7 @@ function parseElement(context: ParserContext, ancestors) {
 }
 
 /**
- * 处理 element 标签（解析标签）
+ * 处理 element 标签（解析标签）、属性、v-xx等指令
  * @param context 上下文对象
  * @param type
  */
@@ -175,6 +208,12 @@ function parseTag(context: ParserContext, type: TagType): any {
   // match[0]: <div
   // match[0].length(4)，'<div>hello world</div>'.slice(4) => '>hello world</div>'
   advanceBy(context, match[0].length)
+
+  // 2-3之间，解析属性、指令
+  // 处理div 到 v-if 中间的空格
+  advanceSpaces(context)
+  // 进行属性（包含 attr + props）解析
+  let props = parseAttributes(context, type)
 
   // -- 处理标签结束部分 --
   // 3.判断是否为自闭和标签 例如：<img/>
@@ -199,8 +238,163 @@ function parseTag(context: ParserContext, type: TagType): any {
     // Element标签类型: 0
     tagType,
     // 属性，目前我们没有做任何处理。但是需要添加上，否则，生成的 ast 放到 vue 源码中会抛出错误
-    props: [],
-    children: []
+    props
+    // ????
+    // children: []
+  }
+}
+
+/**
+ * type: 0开始标签、1结束标签
+ * 进行属性（包含 attr + props）解析
+ */
+function parseAttributes(context: ParserContext, type) {
+  // 解析之后的 props 数组
+  const props: any = []
+  // 属性名数组
+  const attributeNames = new Set<string>()
+
+  // 循环解析，直到解析到标签结束（'>' || '/>'）为止
+  while (
+    context.source.length > 0 &&
+    !startsWith(context.source, '>') &&
+    !startsWith(context.source, '/>')
+  ) {
+    // 具体某一条属性的处理
+    const attr = parseAttribute(context, attributeNames)
+    // 添加属性
+    if (type === TagType.Start) {
+      props.push(attr)
+    }
+    advanceSpaces(context)
+  }
+  return props
+}
+
+/**
+ * 处理指定指令，返回指令节点
+ */
+function parseAttribute(context: ParserContext, nameSet: Set<string>) {
+  // 获取属性名称。例如：v-if
+  // /^[^\t\r\n\f />][^\t\r\n\f />=]*/.exec('v-if="isshow"' || "class='test'") =>
+  // ['v-if', index: 0, input: 'v-if="isshow"', groups: undefined]
+  // ['class', index: 0, input: "class='test'", groups: undefined
+  const match = /^[^\t\r\n\f />][^\t\r\n\f />=]*/.exec(context.source)!
+  // v-if
+  const name = match[0]
+  // 添加当前的处理属性
+  nameSet.add(name)
+
+  // "v-if='isShow' ..." => "='isShow' ..."
+  // 向右移动游标
+  advanceBy(context, name.length)
+
+  // 获取属性值
+  let value: any = undefined
+
+  // 解析模板，并拿到对应的属性值节点
+  // /^[\t\r\n\f ]*=/.test("='isShow'" || "='test'") => true
+  if (/^[\t\r\n\f ]*=/.test(context.source)) {
+    // 移除空格
+    advanceSpaces(context)
+    // 移动等号 "='isShow'" => "'isShow'"
+    advanceBy(context, 1)
+    // 移除空格
+    advanceSpaces(context)
+    // value =>
+    // {
+    //   content: isShow,
+    //   isQuoted: true,
+    //   loc: {}
+    // }
+    value = parseAttributeValue(context)
+  }
+
+  // 针对 v- 的指令处理
+  // /^(v-[A-Za-z0-9-]|:|\.|@|#)/.test("v-if") => true
+  // /^(v-[A-Za-z0-9-]|:|\.|@|#)/.test("class") => false
+  if (/^(v-[A-Za-z0-9-]|:|\.|@|#)/.test(name)) {
+    // 获取指令名称
+    // /(?:^v-([a-z0-9-]+))?(?:(?::|^\.|^@|^#)(\[[^\]]+\]|[^\.]+))?(.+)?$/i.exec("v-if") =>
+    // ['v-if', 'if', undefined, undefined, index: 0, input: 'v-if', groups: undefined]
+    const match =
+      /(?:^v-([a-z0-9-]+))?(?:(?::|^\.|^@|^#)(\[[^\]]+\]|[^\.]+))?(.+)?$/i.exec(
+        name
+      )!
+    // 指令名。v-if 则获取 if
+    let dirName = match[1]
+
+    // TODO：指令参数 v-bind:arg
+    // /(?:^v-([a-z0-9-]+))?(?:(?::|^\.|^@|^#)(\[[^\]]+\]|[^\.]+))?(.+)?$/i.exec("v-bind:arg") =>
+    // ['v-bind:arg', 'bind', 'arg', undefined, index: 0, input: 'v-bind:arg', groups: undefined]
+    // let arg: any
+
+    // /(?:^v-([a-z0-9-]+))?(?:(?::|^\.|^@|^#)(\[[^\]]+\]|[^\.]+))?(.+)?$/i.exec("v-on::click.modifiers") =>
+    // ['v-on::click.modifiers', 'on', ':click', '.modifiers', index: 0, input: 'v-on::click.modifiers', groups: undefined]
+    // TODO：指令修饰符 v-on::click.modifiers
+    // const modifiers = match[3] ? match[3].slice(1).split('.') : []
+
+    // 放在ast节点的 props 属性中
+    return {
+      type: NodeTypes.DIRECTIVE, // 7
+      name: dirName,
+      exp: value && {
+        type: NodeTypes.SIMPLE_EXPRESSION, // 4
+        content: value.content, // "isShow" // 值
+        isStatic: false,
+        loc: value.loc
+      },
+      arg: undefined,
+      modifiers: undefined,
+      loc: {}
+    }
+  }
+
+  // 如果不是指令 是属性
+  return {
+    type: NodeTypes.ATTRIBUTE, // 6
+    name,
+    value: value && {
+      type: NodeTypes.TEXT, // 3
+      content: value.content, // "isShow"
+      loc: value.loc
+    },
+    loc: {}
+  }
+}
+
+/**
+ * 获取属性（attr）的 value
+ */
+function parseAttributeValue(context: ParserContext) {
+  let content = ''
+
+  // 判断是单引号还是双引号
+  const quote = context.source[0]
+  // 双引号、单引号长度都为1
+  const isQuoted = quote === `"` || quote === `'`
+
+  // 引号处理
+  if (isQuoted) {
+    // 双引号
+    advanceBy(context, 1)
+    // 获取结束"的 index
+    const endIndex = context.source.indexOf(quote)
+    if (endIndex === -1) {
+      content = parseTextData(context, context.source.length)
+    } else {
+      // `isShow">...`
+      // 解析出来isShow 得到">
+      content = parseTextData(context, endIndex)
+      // 再移动一位 得到 >
+      advanceBy(context, 1)
+    }
+  }
+
+  return {
+    content, // isShow
+    isQuoted,
+    loc: {}
   }
 }
 
@@ -260,6 +454,20 @@ function parseTextData(context: ParserContext, length: number) {
   advanceBy(context, length)
   // 返回获取到的文本
   return rawText
+}
+
+/**
+ * 前进非固定步骤  处理 div v-if 中间的空格
+ * var match = /^[\t\r\n\f ]+/.exec("  v-")
+ * =>
+ * [' ', index: 0, input: ' v-', groups: undefined]
+ * match[0].length为2
+ */
+function advanceSpaces(context: ParserContext): void {
+  const match = /^[\t\r\n\f ]+/.exec(context.source)
+  if (match) {
+    advanceBy(context, match[0].length)
+  }
 }
 
 /**

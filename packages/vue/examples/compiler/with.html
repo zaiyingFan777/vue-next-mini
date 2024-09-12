@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <script src="../../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+</body>
+<script>
+  // with改变了作用域的指向：即 msg 等同于 _ctx.msg
+  function render(_ctx) {
+    with (_ctx) {
+      console.log(msg);
+    }
+  }
+  const data = {
+    msg: 'world'
+  }
+  // 当触发 call 方法时，我们需要传递第二个参数为 data，以此作为 _ctx 的值。
+  render.call(data, data) // 打印 "world"
+  render.call(data) // 报错
+</script>
+</html>
+

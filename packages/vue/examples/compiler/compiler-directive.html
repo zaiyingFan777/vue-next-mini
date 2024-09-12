@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <script src="../../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+</body>
+<script>
+  const { compile, h, render } = Vue
+  // 创建 template
+  const template = `<div> hello world <h1 v-if="isShow">你好，世界</h1> </div>`
+
+  // 生成 render 函数
+  const renderFn = compile(template)
+
+  // const _Vue = Vue
+
+  // return function render(_ctx, _cache) {
+  //   with (_ctx) {
+  //     const { createElementVNode: _createElementVNode, createCommentVNode: _createCommentVNode } = _Vue
+
+      
+
+  //     return _createElementVNode("div", [], [
+  //       " hello world ",
+  //       isShow
+  //         ? _createElementVNode("h1", null, ["你好，世界"])
+  //         : _createCommentVNode("v-if", true),
+  //       " "
+  //     ])
+  //   }
+  // }
+
+
+  console.log(renderFn.toString());
+  // 创建组件
+  const component = {
+    data() {
+      return {
+        isShow: false
+      }
+    },
+    render: renderFn,
+    created() {
+      setTimeout(() => {
+        this.isShow = true
+      }, 2000)
+    }
+  }
+
+  // 通过 h 函数，生成 vnode
+  const vnode = h(component)
+
+  // 通过 render 函数渲染组件
+  render(vnode, document.querySelector('#app'))
+</script>
+</html>
+

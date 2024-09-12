@@ -61,6 +61,13 @@ export function createVNode(type, props, children): VNode {
 export { createVNode as createElementVNode }
 
 /**
+ * 创建注释节点
+ */
+export function createCommentVNode(text) {
+  return createVNode(Comment, null, text)
+}
+
+/**
  * 构建基础 VNode
  */
 function createBaseVNode(type, props, children, shapeFlag) {

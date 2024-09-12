@@ -6,7 +6,9 @@ import { createVNode, Text } from './vnode'
  * @param instance 组件实例
  */
 export function renderComponentRoot(instance) {
-  const { vnode, render, data } = instance
+  // 因为存在with，所以我们必须保证 data 不能为 undefined
+  // 具体测试文件见：packages\vue\examples\compiler\with.html
+  const { vnode, render, data = {} } = instance
 
   let result
 
@@ -14,7 +16,7 @@ export function renderComponentRoot(instance) {
     // 解析到状态组件
     if (vnode.shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
       // 获取到 result 的返回值（render返回值为vnode），如果 render 中使用了 this，则需要修改 this 指向
-      result = normalizeVNode(render!.call(data))
+      result = normalizeVNode(render!.call(data, data))
     }
   } catch (error) {
     console.error(error)

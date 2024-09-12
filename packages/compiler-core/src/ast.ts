@@ -1,3 +1,4 @@
+import { isString } from '@vue/shared'
 import { CREATE_ELEMENT_VNODE } from './runtimeHelpers'
 
 /**
@@ -81,8 +82,70 @@ export function createVNodeCall(context, tag, props?, children?) {
 export function createCompoundExpression(children, loc) {
   return {
     // 表达式的节点
-    type: NodeTypes.COMPOUND_EXPRESSION,
+    type: NodeTypes.COMPOUND_EXPRESSION, // 8
     children,
     loc
+  }
+}
+
+/**
+ * 创建调用表达式的节点
+ */
+export function createCallExpression(callee, args) {
+  // alternate: {
+  //   type: NodeTypes.JS_CALL_EXPRESSION, // 14
+  //   callee: CREATE_COMMENT, // createCommentVNode
+  //   loc: {},
+  //   arguments: ["v-if", "true"]
+  // }
+  return {
+    type: NodeTypes.JS_CALL_EXPRESSION, // 14
+    loc: {},
+    callee,
+    arguments: args
+  }
+}
+
+/**
+ * 创建条件表达式的节点
+ */
+export function createConditionalExpression(
+  test,
+  consequent,
+  alternate,
+  newline = true
+) {
+  // if codegenNode
+  return {
+    type: NodeTypes.JS_CONDITIONAL_EXPRESSION, // 19
+    test, // condition
+    consequent,
+    alternate,
+    newline,
+    loc: {}
+  }
+}
+
+/**
+ * 创建简单的表达式节点
+ */
+export function createSimpleExpression(content, isStatic) {
+  return {
+    type: NodeTypes.SIMPLE_EXPRESSION, // 4
+    loc: {},
+    content,
+    isStatic
+  }
+}
+
+/**
+ * 创建对象属性节点
+ */
+export function createObjectProperty(key, value) {
+  return {
+    type: NodeTypes.JS_PROPERTY, // 16
+    loc: {},
+    key: isString(key) ? createSimpleExpression(key, true) : key,
+    value
   }
 }

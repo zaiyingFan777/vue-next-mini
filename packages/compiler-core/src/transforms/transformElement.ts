@@ -17,6 +17,10 @@ export const transformElement = (node, context) => {
     // "div"
     let vnodeTag = `"${tag}"`
     let vnodeProps = []
+    // 比如
+    // <div><h1>hello world</h1></div>
+    // 先生成h1的codegenNode，然后codegenNode在h1的js ast上，最后生成div的codegenNode，这时候div的children里面包含h1的js ast，因此生成的div的codegenNode里面的children里
+    // 包含h1的codegenNode。
     let vnodeChildren = node.children
 
     // 给node添加codegenNode属性
