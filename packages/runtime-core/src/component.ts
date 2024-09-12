@@ -99,6 +99,13 @@ export function finishComponentSetup(instance) {
 
   // 组件不存在 render 时，才需要重新赋值
   if (!instance.render) {
+    // 存在编辑器，并且组件中不包含 render 函数，同时包含 template 模板，则直接使用编辑器进行编辑，得到 render 函数
+    if (compile && !Component.render) {
+      // 这里就是 runtime 模块和 compile 模块结合点
+      const template = Component.template
+      Component.render = compile(template)
+    }
+    // 为 render 赋值
     instance.render = Component.render
   }
 
@@ -169,4 +176,16 @@ function callHook(hook: Function, proxy) {
   // hook()
   // 绑定 reactive 后的 data，改变 hook 内的 this 指针，并执行 hook
   hook.bind(proxy)()
+}
+
+/**
+ * 编辑器实例
+ */
+let compile
+
+/**
+ * 用来注册编译器的运行时
+ */
+export function registerRuntimeCompiler(_compile: any) {
+  compile = _compile
 }

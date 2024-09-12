@@ -36,7 +36,7 @@ export function isVNode(value: any): value is VNode {
  * @param children 子节点
  * @returns vnode 对象
  */
-export function createVNode(type, props, children): VNode {
+export function createVNode(type, props, children?): VNode {
   // props处理
   if (props) {
     // 处理class
