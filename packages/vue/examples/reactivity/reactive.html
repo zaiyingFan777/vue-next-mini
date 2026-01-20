@@ -15,9 +15,11 @@
 <script>
   const { reactive, effect } = Vue
 
-  const obj = reactive({
+  const origin_obj = {
     name: '张三'
-  })
+  }
+
+  const obj = reactive(origin_obj)
   
   // console.log(obj.name); // track: 收集依赖 张三
   // obj.name = '李四' // rigger: 触发依赖
