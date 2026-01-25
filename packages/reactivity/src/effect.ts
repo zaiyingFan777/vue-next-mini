@@ -1,5 +1,8 @@
 import { isArray } from '@vue/shared'
 import { createDep, Dep } from './dep'
+import { ComputedRefImpl } from './computed'
+
+export type EffectScheduler = (...args: any[]) => any
 
 type KeyToDepMap = Map<any, Dep>
 
@@ -75,34 +78,39 @@ export function trigger(target: object, key?: unknown) {
 export function triggerEffects(dep: Dep) {
   // 把 dep 构建为一个数组
   const effects = isArray(dep) ? dep : [...dep]
+  // * 没有computed的时候
   // 依次触发
-  for (const effect of effects) {
-    triggerEffect(effect)
-  }
+  // for (const effect of effects) {
+  //   triggerEffect(effect)
+  // }
 
   // 不在依次触发，而是先触发所有的计算属性依赖，再触发所有的非计算属性依赖
-  // for (const effect of effects) {
-  //   if (effect.computed) {
-  //     triggerEffect(effect)
-  //   }
-  // }
-  // for (const effect of effects) {
-  //   if (!effect.computed) {
-  //     triggerEffect(effect)
-  //   }
-  // }
+  for (const effect of effects) {
+    if (effect.computed) {
+      triggerEffect(effect)
+    }
+  }
+  for (const effect of effects) {
+    if (!effect.computed) {
+      triggerEffect(effect)
+    }
+  }
 }
 
 /**
  * 触发指定的依赖
  */
 export function triggerEffect(effect: ReactiveEffect) {
-  effect.run()
-  // if (effect.scheduler) {
-  //   effect.scheduler()
-  // } else {
-  //   effect.run()
-  // }
+  // 最初版本
+  // effect.run()
+
+  // 有了computed后, targetMap的setter => computed.effect.scheduler => computed.deps的effect重新拿computed.value
+  // => computed.effect.run => 重新拿obj.value
+  if (effect.scheduler) {
+    effect.scheduler()
+  } else {
+    effect.run()
+  }
 }
 
 /**
@@ -114,7 +122,15 @@ export let activeEffect: ReactiveEffect | undefined
  * 响应性触发依赖时的执行类
  */
 export class ReactiveEffect<T = any> {
-  constructor(public fn: () => T) {}
+  /**
+   * 存在该属性，则表示当前的 effect 为计算属性的 effect
+   */
+  computed?: ComputedRefImpl<T>
+
+  constructor(
+    public fn: () => T,
+    public scheduler: EffectScheduler | null = null
+  ) {}
 
   run() {
     // 为 activeEffect 赋值

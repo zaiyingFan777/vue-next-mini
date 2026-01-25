@@ -43,7 +43,7 @@
     // obj.name变化（targetMap的setter，effect.scheduler） => effect.scheduler（computedRefImpl.dep）=> effect的fn执行，=> computedObj.value的getter，effect被收集到computedRefImpl.dep
     // => computedRefImpl.effect.run => obj.name的getter，computedRefImpl.effect被收集到targetmap里，并返回最新值，更新视图
     obj.name = '李四'
-    console.log(computedObj.value); // 李四
+    // console.log(computedObj.value); // 李四
   }, 2000)
 </script> -->
 
