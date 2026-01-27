@@ -36,12 +36,7 @@ function doWatch(
   if (isReactive(source)) {
     // * 响应式数据
     // 指定 getter
-    // getter = () => source
-    // 官方逻辑：对 reactive 对象做快照取值，而非直接返回对象
-    getter = () => {
-      // 深拷贝生成快照，避免引用指向同一对象
-      return deep ? JSON.parse(JSON.stringify(source)) : { ...source }
-    }
+    getter = () => source
     // 深度
     deep = true
   } else {
