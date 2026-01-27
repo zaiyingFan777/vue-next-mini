@@ -1,4 +1,4 @@
-import { isArray } from '@vue/shared'
+import { extend, isArray } from '@vue/shared'
 import { createDep, Dep } from './dep'
 import { ComputedRefImpl } from './computed'
 
@@ -20,7 +20,7 @@ const targetMap = new WeakMap<any, KeyToDepMap>()
  * @param key 代理对象的 key，当依赖被触发时，需要根据该 key 获取
  */
 export function track(target: object, key: unknown) {
-  console.log('track: 收集依赖')
+  // console.log('track: 收集依赖')
   // 如果当前不存在执行函数，则直接 return
   if (!activeEffect) return
   // 尝试从 targetMap 中，根据 target 获取 map
@@ -37,7 +37,7 @@ export function track(target: object, key: unknown) {
   }
   trackEffects(dep)
   // 临时打印
-  console.log(targetMap)
+  // console.log(targetMap)
 }
 
 /**
@@ -55,7 +55,7 @@ export function trackEffects(dep: Dep) {
  * @param key 代理对象的 key，当依赖被触发时，需要根据该 key 获取
  */
 export function trigger(target: object, key?: unknown) {
-  console.log('trigger: 触发依赖')
+  // console.log('trigger: 触发依赖')
   // 依据 target 获取存储的 map 实例
   const depsMap = targetMap.get(target)
   // 如果 map 不存在，则直接 return
@@ -139,6 +139,13 @@ export class ReactiveEffect<T = any> {
     // 执行 fn 函数
     return this.fn()
   }
+
+  stop() {}
+}
+
+export interface ReactiveEffectOptions {
+  lazy?: boolean
+  scheduler?: EffectScheduler
 }
 
 /**
@@ -146,9 +153,18 @@ export class ReactiveEffect<T = any> {
  * @param fn 执行方法
  * @returns 以 ReactiveEffect 实例为 this 的执行函数
  */
-export function effect<T = any>(fn: () => T) {
+export function effect<T = any>(fn: () => T, options?: ReactiveEffectOptions) {
   // 生成 ReactiveEffect 实例
   const _effect = new ReactiveEffect(fn)
-  // 执行 run 函数
-  _effect.run()
+
+  // 存在 options，则合并配置对象
+  if (options) {
+    extend(_effect, options)
+  }
+
+  // !options.lazy 时, lazy为false非懒执行
+  if (!options || !options.lazy) {
+    // 执行 run 函数
+    _effect.run()
+  }
 }

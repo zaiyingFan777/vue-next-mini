@@ -19,12 +19,13 @@
   // 1
   // 代码结束
   // 2
+  // * triggerEffect 如果effect有调度器则执行调度器，否则执行run
   effect(() => {
-    console.log(obj.count);
+    console.log(obj.count, 'inner');
   }, {
     scheduler() {
       setTimeout(() => {
-        console.log(obj.count);
+        console.log(obj.count, 'outer');
       })
     }
   })
