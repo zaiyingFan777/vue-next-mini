@@ -11,7 +11,7 @@
 
 <script>
   const { h } = Vue
-
+  // h函数执行4次，先执行数组里的h(p, p1)，最后执行h(div, ...)
   const vnode = h('div', {
     class: 'test'
   }, [

@@ -13,6 +13,7 @@
   const { h } = Vue
 
   // 对象class
+  // <div :class="{red: true}">增强的class</div>
   // const vnode = h('div', {
   //   class: {
   //     'red': true
@@ -20,7 +21,7 @@
   // }, '增强的 class')
   // 数组class
   const vnode = h('div', {
-    class: [{ red: false }, 'blue']
+    class: [{ red: false }, 'blue', { yellow: true }]
   }, '增强的 class')
   // 字符串class
   // const vnode = h('div', {

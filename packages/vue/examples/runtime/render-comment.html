@@ -15,7 +15,7 @@
   // 挂载
   render(vnode, document.querySelector('#app'))
 
-  // 动态注释不受支持
+  // 动态注释不受支持（因此页面上还是hello world）
   setTimeout(() => {
     const vnode2 = h(Comment, '你好，世界')
     render(vnode2, document.querySelector('#app'))
