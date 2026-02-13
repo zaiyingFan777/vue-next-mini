@@ -12,8 +12,8 @@
   // 复合表达式 <div> hello {{ msg }}</div>
   const { compile, h, render } = Vue
   // 创建 template
-  // const template = `<div> hello {{ msg }} </div>`
-  const template = `<div> <h> hello {{ msg }} </h> </div>`
+  // const template = `<div>hello {{ msg }}</div>`
+  const template = `<div><h>hello {{ msg }}</h></div>`
 
   // 生成 render 函数
   const renderFn = compile(template)
